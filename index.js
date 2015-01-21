@@ -6,7 +6,8 @@ var apiLogConfig;
 
 exports.configure = function(options){
   var path = options.log4jsConfig || path.join(__dirname, "log4js_Config.json");
-  log4js.configure(path, {reloadSecs: 50, cwd: __dirname});
+  var cwd = options.log4jsCWD || __dirname;
+  log4js.configure(path, {reloadSecs: 50, cwd: cwd});
   if (options.apiLog){
     if(!options.apiLog.uri){
       throw new Error("Log API URI is required.");
