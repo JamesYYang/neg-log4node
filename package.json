@@ -1,0 +1,28 @@
+{
+  "name": "neg-log4node",
+  "version": "0.0.1",
+  "description": "Newegg log component for node.js.",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/JamesYYang/neg-log4node"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "log",
+    "node.js"
+  ],
+  "author": "James.Y.Yang",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/JamesYYang/neg-log4node/issues"
+  },
+  "homepage": "https://github.com/JamesYYang/neg-log4node",
+  "dependencies": {
+    "log4js": "^0.6.22",
+    "request": "^2.51.0"
+  }
+}
