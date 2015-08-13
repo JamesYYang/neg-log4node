@@ -1,13 +1,32 @@
-var log4js = require("log4js");
 var request = require("request");
 var os = require("os");
 var path = require("path");
+var clc = require('cli-color');
+var util = require('util')
 var apiLogConfig;
+var inspect = util.inspect
+
+error = function(args){
+  console.log(clc.red.bold(stringify(args)));
+}
+
+warn = function(args){
+  console.log(clc.yellow(stringify(args)));
+}
+
+info = function(args){
+  console.log(clc.green(stringify(args)));
+}
+
+debug = function(args){
+  console.log(clc.cyan(stringify(args)));
+}
+
+trace = function(args){
+  console.log(clc.magenta(stringify(args)));
+}
 
 exports.configure = function(options){
-  var path = options.log4jsConfig || path.join(__dirname, "log4js_Config.json");
-  var cwd = options.log4jsCWD || __dirname;
-  log4js.configure(path, {reloadSecs: 50, cwd: cwd});
   if (options.apiLog){
     if(!options.apiLog.uri){
       throw new Error("Log API URI is required.");
@@ -25,7 +44,7 @@ exports.configure = function(options){
 
 exports.info = function(args, category, isApi){
   var options = parseArgs(arguments);
-  options.logger.info(options.content);
+  info(options.content);
   if(options.isApi){
     writeApiLog(options.content);
   }
@@ -33,7 +52,7 @@ exports.info = function(args, category, isApi){
 
 exports.debug = function(args, category, isApi){
   var options = parseArgs(arguments);
-  options.logger.debug(options.content);
+  debug(options.content);
   if(options.isApi){
     writeApiLog(options.content);
   }
@@ -41,7 +60,7 @@ exports.debug = function(args, category, isApi){
 
 exports.trace = function(args, category, isApi){
   var options = parseArgs(arguments);
-  options.logger.trace(options.content);
+  trace(options.content);
   if(options.isApi){
     writeApiLog(options.content);
   }
@@ -49,7 +68,7 @@ exports.trace = function(args, category, isApi){
 
 exports.warn = function(args, category, isApi){
   var options = parseArgs(arguments);
-  options.logger.warn(options.content);
+  warn(options.content);
   if(options.isApi){
     writeApiLog(options.content);
   }
@@ -57,7 +76,7 @@ exports.warn = function(args, category, isApi){
 
 exports.error = function(args, category, isApi){
   var options = parseArgs(arguments);
-  options.logger.error(options.content);
+  error(options.content);
   if(options.isApi){
     writeApiLog(options.content);
   }
@@ -78,9 +97,9 @@ writeApiLog = exports.apiError = function(error) {
   options.body = JSON.stringify(logEntry);
   return request(options, function(err, response, body) {
     if ((err != null) || response.statusCode >= 400) {
-      console.error("Write API Log failed");
-      console.error(err);
-      console.error(body);
+      error("Write API Log failed");
+      error(err);
+      error(body);
     }
   });
 };
@@ -94,12 +113,7 @@ parseArgs = function(args){
     var options = {};
     options.content = a[0];
     if(a.length === 2 && is("Boolean", a[1])){
-      options.logger = log4js.getLogger();
       options.isApi = a[1];
-    }
-    else{
-      options.logger = log4js.getLogger(a[1]);
-      options.isApi = a[2];
     }
     return options;
   }
