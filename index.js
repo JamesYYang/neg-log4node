@@ -36,45 +36,46 @@ exports.configure = function(options){
       global: options.apiLog.global || "auto",
       local: options.apiLog.local || "auto",
       category: options.apiLog.category || "auto",
-      userName: options.apiLog.user || "system"
+      userName: options.apiLog.user || "system",
+      host: options.apiLog.host || ""
     };
 
   }
 };
 
-exports.info = function(args, category, isApi){
+exports.info = function(){
   var options = parseArgs(arguments);
   info(options.content);
   if(options.isApi){
-    writeApiLog(options.content);
+    writeApiLog(options.content, "I");
   }
 };
 
-exports.debug = function(args, category, isApi){
+exports.debug = function(){
   var options = parseArgs(arguments);
   debug(options.content);
   if(options.isApi){
-    writeApiLog(options.content);
+    writeApiLog(options.content, "D");
   }
 };
 
-exports.trace = function(args, category, isApi){
+exports.trace = function(){
   var options = parseArgs(arguments);
   trace(options.content);
   if(options.isApi){
-    writeApiLog(options.content);
+    writeApiLog(options.content, "T");
   }
 };
 
-exports.warn = function(args, category, isApi){
+exports.warn = function(){
   var options = parseArgs(arguments);
   warn(options.content);
   if(options.isApi){
-    writeApiLog(options.content);
+    writeApiLog(options.content, "A");
   }
 };
 
-exports.error = function(args, category, isApi){
+exports.error = function(){
   var options = parseArgs(arguments);
   error(options.content);
   if(options.isApi){
@@ -82,15 +83,16 @@ exports.error = function(args, category, isApi){
   }
 };
 
-writeApiLog = exports.apiError = function(error) {
+writeApiLog = exports.apiError = function(error, logType) {
   var logEntry, options;
   options = getLogApiOption();
+  logType = logType || "E"
   logEntry = {
     CategoryName: apiLogConfig.category,
     GlobalName: apiLogConfig.global,
     LocalName: apiLogConfig.local,
-    LogType: "E",
-    LogServerIP: getLocalIP(),
+    LogType: logType,
+    LogServerIP: apiLogConfig.host || getLocalIP(),
     LogUserName: apiLogConfig.userName,
     Content: stringify(error)
   };
