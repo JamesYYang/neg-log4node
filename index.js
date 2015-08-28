@@ -86,7 +86,13 @@ exports.error = function(){
 writeApiLog = exports.apiError = function(error, logType) {
   var logEntry, options;
   options = getLogApiOption();
-  logType = logType || "E"
+  var a = Array.prototype.slice.call(arguments);
+  if(a.length === 2){
+    logType = logType || "E"
+  }
+  else{
+    logType = "E"
+  }
   logEntry = {
     CategoryName: apiLogConfig.category,
     GlobalName: apiLogConfig.global,
