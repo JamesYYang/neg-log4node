@@ -8,23 +8,23 @@ var inspect = util.inspect
 
 error = function(args){
   console.log(clc.red.bold(stringify(args)));
-}
+};
 
 warn = function(args){
   console.log(clc.yellow(stringify(args)));
-}
+};
 
 info = function(args){
   console.log(clc.green(stringify(args)));
-}
+};
 
 debug = function(args){
   console.log(clc.cyan(stringify(args)));
-}
+};
 
 trace = function(args){
   console.log(clc.magenta(stringify(args)));
-}
+};
 
 exports.configure = function(options){
   if (options.apiLog){
@@ -51,7 +51,7 @@ exports.info = function(){
   }
 };
 
-exports.debug = function(){
+exports.log = exports.debug = function(){
   var options = parseArgs(arguments);
   debug(options.content);
   if(options.isApi){
