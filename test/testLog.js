@@ -7,7 +7,8 @@ var options = {
     local: "testLocal",
     category: "exception",
     user: "jy25"
-  }
+  },
+  section: 'test'
 }
 
 logger.configure(options);
@@ -17,7 +18,7 @@ logger.log("test from log without mail");
 logger.info("test from info without mail");
 logger.trace("test from trace without mail");
 logger.warn("test from warn without mail");
-logger.error("test from error without mail");
+logger.error("test from error without mail", true);
 
 //logger.debug("test from debug with mail", true);
 //logger.info("test from info with mail", true);

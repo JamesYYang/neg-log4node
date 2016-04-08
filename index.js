@@ -1,34 +1,22 @@
+'use strict';
+
 var request = require("request");
 var os = require("os");
 var path = require("path");
-var clc = require('cli-color');
 var util = require('util')
 var apiLogConfig;
 var inspect = util.inspect
+var debugLog = console.log;
 
-error = function(args){
-  console.log(clc.red.bold(stringify(args)));
+var error, warn, info, debug, trace;
+
+error = warn = info = debug = trace = function(args) {
+  debugLog(args);
 };
 
-warn = function(args){
-  console.log(clc.yellow(stringify(args)));
-};
-
-info = function(args){
-  console.log(clc.green(stringify(args)));
-};
-
-debug = function(args){
-  console.log(clc.cyan(stringify(args)));
-};
-
-trace = function(args){
-  console.log(clc.magenta(stringify(args)));
-};
-
-exports.configure = function(options){
-  if (options.apiLog){
-    if(!options.apiLog.uri){
+exports.configure = function(options) {
+  if (options.apiLog) {
+    if (!options.apiLog.uri) {
       throw new Error("Log API URI is required.");
     }
     apiLogConfig = {
@@ -39,101 +27,114 @@ exports.configure = function(options){
       userName: options.apiLog.user || "system",
       host: options.apiLog.host || ""
     };
+  }
 
+  if (options.section) {
+    debugLog = util.debuglog(options.section);
   }
 };
 
-exports.info = function(){
+exports.info = function() {
   var options = parseArgs(arguments);
   info(options.content);
-  if(options.isApi){
+  if (options.isApi) {
     writeApiLog(options.content, "I");
   }
 };
 
-exports.log = exports.debug = function(){
+exports.log = exports.debug = function() {
   var options = parseArgs(arguments);
   debug(options.content);
-  if(options.isApi){
+  if (options.isApi) {
     writeApiLog(options.content, "D");
   }
 };
 
-exports.trace = function(){
+exports.trace = function() {
   var options = parseArgs(arguments);
   trace(options.content);
-  if(options.isApi){
+  if (options.isApi) {
     writeApiLog(options.content, "T");
   }
 };
 
-exports.warn = function(){
+exports.warn = function() {
   var options = parseArgs(arguments);
   warn(options.content);
-  if(options.isApi){
+  if (options.isApi) {
     writeApiLog(options.content, "A");
   }
 };
 
-exports.error = function(){
+exports.error = function() {
   var options = parseArgs(arguments);
   error(options.content);
-  if(options.isApi){
+  if (options.isApi) {
     writeApiLog(options.content);
   }
 };
 
-writeApiLog = exports.apiError = function(error, logType) {
-  var logEntry, options;
-  options = getLogApiOption();
+var writeApiLog = exports.apiError = function(err, logType) {
+  if (err.ignoreApi) {
+    error(err);
+    return;
+  }
+
+  var options = getLogApiOption();
   var a = Array.prototype.slice.call(arguments);
-  if(a.length === 2){
+  if (a.length === 2) {
     logType = logType || "E"
   }
-  else{
+  else {
     logType = "E"
   }
-  logEntry = {
+  var logEntry = {
     CategoryName: apiLogConfig.category,
     GlobalName: apiLogConfig.global,
     LocalName: apiLogConfig.local,
     LogType: logType,
     LogServerIP: apiLogConfig.host || getLocalIP(),
     LogUserName: apiLogConfig.userName,
-    Content: stringify(error)
+    Content: stringify(err)
   };
-  options.body = JSON.stringify(logEntry);
-  return request(options, function(err, response, body) {
-    if ((err != null) || response.statusCode >= 400) {
+
+  try {
+    options.body = JSON.stringify(logEntry);
+  } catch (err2) {
+    error(err2);
+  }
+
+  request(options, function(err3, response, body) {
+    if (err3 || response.statusCode >= 400) {
       error("Write API Log failed");
-      error(err);
-      error(body);
+      var msg = err3 ? err3 : body;
+      error(msg);
     }
   });
 };
 
-parseArgs = function(args){
+var parseArgs = function(args) {
   var a = Array.prototype.slice.call(args);
-  if(a.length === 0){
+  if (a.length === 0) {
     throw new Error("Log content is required.")
   }
-  else{
+  else {
     var options = {};
     options.content = a[0];
-    if(a.length === 2 && is("Boolean", a[1])){
+    if (a.length === 2 && is("Boolean", a[1])) {
       options.isApi = a[1];
     }
     return options;
   }
 };
 
-is = function(type, obj){
+var is = function(type, obj) {
   var clas = Object.prototype.toString.call(obj).slice(8, -1);
   return obj != undefined && obj != null && clas === type;
 };
 
-getLogApiOption = function(){
-  if(!apiLogConfig){
+var getLogApiOption = function() {
+  if (!apiLogConfig) {
     throw new Error("Please provider log API url");
   }
   var options = {
@@ -147,7 +148,7 @@ getLogApiOption = function(){
   return options;
 };
 
-getLocalIP = function() {
+var getLocalIP = function() {
   var interfaces, k, k2, temp;
   interfaces = os.networkInterfaces();
   for (k in interfaces) {
@@ -160,7 +161,7 @@ getLocalIP = function() {
   }
 };
 
-stringify = function(val) {
+var stringify = function(val) {
   var stack, str;
   stack = val.stack;
   if (stack) {
